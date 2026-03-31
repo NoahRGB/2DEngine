@@ -9,7 +9,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
-add_executable(2DEngine "2DEngine.cpp")
+add_executable(2DEngine "engine/Engine2D.cpp" "engine/Colour.h" "engine/Colour.cpp" "src/main.cpp" "engine/Engine2D.h")
 
 # links the imported targets from vcpkg
 target_link_libraries(2DEngine PRIVATE
