@@ -6,7 +6,7 @@
 int main() {
 
 	int WIDTH = 500, HEIGHT = 500;
-	Colour bg(255, 0, 0, 1.0f);
+	Colour bg(255, 255, 0, 1.0f);
 
 	Engine2D engine(WIDTH, HEIGHT);
 	engine.init();

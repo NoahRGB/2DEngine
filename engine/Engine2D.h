@@ -21,6 +21,9 @@ public:
 	void clearScreen();
 	void background(const Colour& colour);
 
+	unsigned int VAO;
+	unsigned int shaderProgram;
+
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void processInput(GLFWwindow* window);

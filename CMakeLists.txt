@@ -17,4 +17,3 @@ target_link_libraries(2DEngine PRIVATE
     glad::glad
     glm::glm
 )
-
