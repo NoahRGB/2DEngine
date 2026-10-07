@@ -21,8 +21,11 @@ public:
 	void setBool(const std::string &name, bool val) const;
 	void setInt(const std::string &name, int val) const;
 	void setFloat(const std::string &name, float val) const;
+	void setDouble(const std::string &name, double val) const;
 	void setMat4f(const std::string &name, glm::mat4 val) const;
 	void setVec4f(const std::string &name, glm::vec4 val) const;
+	void setVec2f(const std::string &name, glm::vec2 val) const;
+	void setVec2d(const std::string &name, glm::dvec2 val) const;
 
 	unsigned int ID;
 

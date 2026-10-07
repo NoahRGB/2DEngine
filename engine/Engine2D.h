@@ -24,15 +24,23 @@ public:
 	void background(const Colour& colour);
 
 	void drawRect(float x, float y, float width, float height, const Colour& colour, Shader* shader = nullptr);
+    void drawCircle(float x, float y, float radius, const Colour& colour, Shader* shader = nullptr);
+
+    glm::vec2 mousePos() const;
+    float scroll() const;
+    float isLeftClicking() const;
+    double time() const;
 
     Rect rectShape;
     Shader commonShader;
+    Shader circleShader;
 
     glm::mat4 projection;
     void updateProjection();
 
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void processInput(GLFWwindow* window);
 
 	void setupGeometry();
@@ -40,4 +48,6 @@ private:
 
     GLFWwindow* window;
     int windowWidth, windowHeight;
+
+    float scrollDelta = 0.0f;
 };

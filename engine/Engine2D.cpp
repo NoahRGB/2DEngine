@@ -21,6 +21,13 @@ void Engine2D::processInput(GLFWwindow * window) {
 
 void Engine2D::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+    auto* engine = static_cast<Engine2D*>(glfwGetWindowUserPointer(window));
+    engine->updateProjection();
+}
+
+void Engine2D::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    auto* engine = static_cast<Engine2D*>(glfwGetWindowUserPointer(window));
+    engine->scrollDelta += (float)yoffset;
 }
 
 void Engine2D::setupGeometry() {
@@ -29,6 +36,10 @@ void Engine2D::setupGeometry() {
 
 int Engine2D::init() {
     glfwInit();
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     this->window = glfwCreateWindow(this->windowWidth, this->windowHeight, "Window", NULL, NULL);
     if (this->window == NULL) {
@@ -45,9 +56,16 @@ int Engine2D::init() {
     }
 
     glViewport(0, 0, this->windowWidth, this->windowHeight);
-    glfwSetFramebufferSizeCallback(window, Engine2D::framebuffer_size_callback);
+    glfwSetWindowUserPointer(this->window, this);
+    glfwSetFramebufferSizeCallback(this->window, Engine2D::framebuffer_size_callback);
+    glfwSetScrollCallback(this->window, Engine2D::scroll_callback);
 
-    this->commonShader.initialise("../engine/shaders/basic_shader.vs", "../engine/shaders/basic_shader.fs");
+    // enable alpha/blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    this->commonShader.initialise("../engine/shaders/common.vs", "../engine/shaders/common.fs");
+    this->circleShader.initialise("../engine/shaders/common.vs", "../engine/shaders/circle.fs");
     this->setupGeometry();
 
     this->updateProjection();
@@ -66,20 +84,60 @@ void Engine2D::drawRect(float x, float y, float width, float height, const Colou
     this->rectShape.draw(s, transformation, this->projection, colour.glm());
 }
 
+void Engine2D::drawCircle(float x, float y, float radius, const Colour& colour, Shader* shader) {
+    Shader* s = shader ? shader : &this->circleShader;
+
+    // cricles are drawn using the rect geometry and use a differenty frag shader
+    // to define the circle shape
+
+    glm::mat4 transformation = glm::mat4(1.0f);
+    transformation = glm::translate(transformation, glm::vec3(x, y, 0.0f));
+    // the unit quad spans -0.5to 0.5 so scaling by the diameter gives the radius
+    transformation = glm::scale(transformation, glm::vec3(radius * 2.0f, radius * 2.0f, 1.0f));
+
+    this->rectShape.draw(s, transformation, this->projection, colour.glm());
+}
+
+glm::vec2 Engine2D::mousePos() const {
+    double x, y;
+    glfwGetCursorPos(this->window, &x, &y);
+    return glm::vec2((float)x, (float)y);
+}
+
+float Engine2D::scroll() const {
+    return this->scrollDelta;
+}
+
+float Engine2D::isLeftClicking() const {
+    return glfwGetMouseButton(this->window, GLFW_MOUSE_BUTTON_LEFT);
+}
+
+double Engine2D::time() const {
+    return glfwGetTime();
+}
+
+
 void Engine2D::updateProjection() {
     this->projection = glm::ortho(0.0f, (float)this->windowWidth, (float)this->windowHeight, 0.0f);
 }
 
 void Engine2D::run() {
 
+    double savedTime = glfwGetTime();
+
     while (!glfwWindowShouldClose(this->window)) {
+        double currentTime = glfwGetTime();
+        float deltaTime = (float)(currentTime - savedTime);
+        savedTime = currentTime;
+
         this->processInput(this->window);
 
-        this->update(0.0); 
+        this->update(deltaTime); 
 
         this->render();
 
         glfwSwapBuffers(this->window);
+        this->scrollDelta = 0.0f;
         glfwPollEvents();
     }
 
