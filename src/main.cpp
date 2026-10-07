@@ -6,7 +6,7 @@
 int main() {
 
 	int WIDTH = 500, HEIGHT = 500;
-	Colour bg(255, 255, 0, 1.0f);
+	Colour bg(0, 0, 0, 1);
 
 	Engine2D engine(WIDTH, HEIGHT);
 	engine.init();
@@ -17,6 +17,9 @@ int main() {
 
 	engine.render = [&]() {
 		engine.clearScreen();
+		engine.drawRect(250, 250, 100, 100, {255, 255, 100, 1});
+		engine.drawRect(10, 10, 100, 100, {255, 100, 100, 1});
+
 		engine.background(bg);
 	};
 

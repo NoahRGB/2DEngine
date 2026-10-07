@@ -23,6 +23,10 @@ void Engine2D::framebuffer_size_callback(GLFWwindow* window, int width, int heig
     glViewport(0, 0, width, height);
 }
 
+void Engine2D::setupGeometry() {
+    this->rectShape.setupGeometry();
+}
+
 int Engine2D::init() {
     glfwInit();
 
@@ -43,93 +47,27 @@ int Engine2D::init() {
     glViewport(0, 0, this->windowWidth, this->windowHeight);
     glfwSetFramebufferSizeCallback(window, Engine2D::framebuffer_size_callback);
 
+    this->commonShader.initialise("../engine/shaders/basic_shader.vs", "../engine/shaders/basic_shader.fs");
+    this->setupGeometry();
 
-
-
-
-
-		float vertices[] = {
-		  -0.5f, -0.5f, 0.0f,
-			0.5f, -0.5f, 0.0f,
-			0.0f,  0.5f, 0.0f
-		};  
-
-		unsigned int VBO;
-		glGenBuffers(1, &VBO);
-
-		const char *vertexShaderSource = "#version 330 core\n"
-			"layout (location = 0) in vec3 aPos;\n"
-    	"void main()\n"
-    	"{\n"
-    	"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    	"}\0";
-
-		const char *fragmentShaderSource = "#version 330 core\n"
-			"out vec4 FragColor;\n"
-    	"void main()\n"
-    	"{\n"
-    	"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    	"}\0";
-
-
-		unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-		glCompileShader(vertexShader);
-
-
-		int  success;
-		char infoLog[512];
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-		if(!success)
-		{
-		    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-		}
-
-		unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-		glCompileShader(fragmentShader);
-
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-		if(!success)
-		{
-		    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		    std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-		}
-
-		this->shaderProgram = glCreateProgram();
-		glAttachShader(shaderProgram, vertexShader);
-		glAttachShader(shaderProgram, fragmentShader);
-		glLinkProgram(shaderProgram);
-
-
-		glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-		if(!success) {
-		    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		    std::cout << "Shader program failed\n" << infoLog << std::endl;
-		}
-
-		glDeleteShader(vertexShader);
-		glDeleteShader(fragmentShader);
-
-		glGenVertexArrays(1, &this->VAO);
-
-		glBindVertexArray(this->VAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-
+    this->updateProjection();
 
     return 0;
 }
 
-void Engine2D::close() {
-    glfwTerminate();
+void Engine2D::drawRect(float x, float y, float width, float height, const Colour& colour, Shader* shader) {
+    Shader* s = shader ? shader : &this->commonShader;
+
+    glm::mat4 transformation = glm::mat4(1.0f);
+    // shifted by half width/height so that x/y refer to the top left corner of the rect
+    transformation = glm::translate(transformation, glm::vec3(x + (width/2.0f), y + (height/2.0f), 0.0f));
+    transformation = glm::scale(transformation, glm::vec3(width, height, 1.0f));
+
+    this->rectShape.draw(s, transformation, this->projection, colour.glm());
+}
+
+void Engine2D::updateProjection() {
+    this->projection = glm::ortho(0.0f, (float)this->windowWidth, (float)this->windowHeight, 0.0f);
 }
 
 void Engine2D::run() {
@@ -137,18 +75,9 @@ void Engine2D::run() {
     while (!glfwWindowShouldClose(this->window)) {
         this->processInput(this->window);
 
-        this->update(0.0);
+        this->update(0.0); 
 
         this->render();
-
-
-				glUseProgram(this->shaderProgram);
-				glBindVertexArray(this->VAO);
-				glDrawArrays(GL_TRIANGLES, 0, 3);
-
-
-
-
 
         glfwSwapBuffers(this->window);
         glfwPollEvents();
@@ -163,4 +92,8 @@ void Engine2D::clearScreen() {
 
 void Engine2D::background(const Colour& colour) {
     glClearColor(colour.r, colour.g, colour.b, colour.a);
+}
+
+void Engine2D::close() {
+    glfwTerminate();
 }

@@ -20,3 +20,7 @@ Colour::Colour(int r, int g, int b, float a) {
 	this->b = b / 255.0f;
 	this->a = a;
 }
+
+glm::vec4 Colour::glm() const {
+	return glm::vec4(this->r, this->g, this->b, this->a);
+}

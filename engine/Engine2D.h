@@ -5,6 +5,8 @@
 #include <functional>
 
 #include "Colour.h"
+#include "Shader.h"
+#include "Rect.h"
 
 class Engine2D {
 
@@ -21,13 +23,19 @@ public:
 	void clearScreen();
 	void background(const Colour& colour);
 
-	unsigned int VAO;
-	unsigned int shaderProgram;
+	void drawRect(float x, float y, float width, float height, const Colour& colour, Shader* shader = nullptr);
+
+    Rect rectShape;
+    Shader commonShader;
+
+    glm::mat4 projection;
+    void updateProjection();
 
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void processInput(GLFWwindow* window);
-    
+
+	void setupGeometry();
     void close();
 
     GLFWwindow* window;
