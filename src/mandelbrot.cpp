@@ -5,7 +5,7 @@
 
 int main() {
 
-	int WIDTH = 1000, HEIGHT = 1000;
+	int WIDTH = 500, HEIGHT = 500;
 	Colour bg(0, 0, 0, 1);
 
 	Engine2D engine(WIDTH, HEIGHT);
@@ -15,6 +15,8 @@ int main() {
 
 	double zoom = 1.0;
 	float automaticZoomSpeed = 1.0;
+	bool autoZoom = false;
+	float aspectRatio = WIDTH / HEIGHT;
 
 	// glm::dvec2 position(-0.743643887037151, 0.131825904205330);
 	glm::dvec2 position(-0.77568377, 0.13646737);
@@ -28,12 +30,14 @@ int main() {
 
 		// zoom using scroll wheel and slowly zoom in automatically
 		zoom *= std::pow(1.1, engine.scroll());
-		zoom *= std::exp(automaticZoomSpeed * deltaTime);
+		if (autoZoom) zoom *= std::exp(automaticZoomSpeed * deltaTime);
 
 		// clicking+dragging
 		bool click = engine.isLeftClicking();
 		if (click && isClicking) {
-			position += (lastMousePos - mousePos) * 3.0 / zoom;
+			glm::dvec2 delta = lastMousePos - mousePos;
+			delta.x *= aspectRatio;
+			position += delta * 3.0 / zoom;
 		}
 		
 		lastMousePos = mousePos;
@@ -41,6 +45,7 @@ int main() {
 
 		// send current zoom/pos/time to fradment shader
 		mandelbrotShader.enable();
+		mandelbrotShader.setFloat("uAspect", aspectRatio);
 		mandelbrotShader.setDouble("uZoom", zoom);
 		mandelbrotShader.setVec2d("uPos", position);
 		mandelbrotShader.setFloat("uTime", (float)engine.time());

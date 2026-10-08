@@ -7,6 +7,7 @@ out vec4 FragColor;
 uniform double uZoom;
 uniform dvec2 uPos;
 uniform float uTime;
+uniform float uAspect;
 
 vec3 palette(float t) {
     // see https://iquilezles.org/articles/palettes/
@@ -16,14 +17,14 @@ vec3 palette(float t) {
     // vec3 d = vec3(0.5, 0.20, 0.25);
     vec3 a = vec3(0.5, 0.5, 0.5);
     vec3 b = vec3(0.5, 0.5, 0.5);
-    vec3 c = vec3(1.0, 1.0, 0.5);
-    vec3 d = vec3(0.80, 0.90, 0.30);
+    vec3 c = vec3(1.0, 0.7, 0.4);
+    vec3 d = vec3(0.0, 0.15, 0.20);
     return a + b * cos(6.28318 * (c * t + d));
 }
 
 void main() {
 
-    dvec2 c = uPos + vLocal * 3.0 / uZoom;
+    dvec2 c = uPos + dvec2(vLocal.x*uAspect, vLocal.y) * 3.0 / uZoom;
     dvec2 z = vec2(0.0);
 
     // set maxIterations based on how zoomed in it is
@@ -45,5 +46,7 @@ void main() {
 
     // smooth stepping (https://iquilezles.org/articles/msetsmooth/)
     float sn = float(iteration) - log2(log2(float(dot(z, z)))) + 4.0;
-    FragColor = vec4(palette(sn * 0.02 + uTime * 0.5), 1.0);
+    FragColor = vec4(palette(sn * 0.01 + uTime * 0.5), 1.0);
+    // FragColor = vec4(palette(sn * 0.02), 1.0);
+
 }
