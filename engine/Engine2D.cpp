@@ -66,6 +66,8 @@ int Engine2D::init() {
 
     this->commonShader.initialise("../engine/shaders/common.vs", "../engine/shaders/common.fs");
     this->circleShader.initialise("../engine/shaders/common.vs", "../engine/shaders/circle.fs");
+    this->textureShader.initialise("../engine/shaders/common.vs", "../engine/shaders/texture.fs");
+
     this->setupGeometry();
 
     this->updateProjection();
@@ -97,6 +99,16 @@ void Engine2D::drawCircle(float x, float y, float radius, const Colour& colour, 
 
     this->rectShape.draw(s, transformation, this->projection, colour.glm());
 }
+
+void Engine2D::drawTexture(float x, float y, float width, float height, Texture& texture, const Colour& tint) {
+    glm::mat4 transformation = glm::mat4(1.0f);
+    // shifted by half width/height so that x/y refer to the top left corner of the rect
+    transformation = glm::translate(transformation, glm::vec3(x + (width/2.0f), y + (height/2.0f), 0.0f));
+    transformation = glm::scale(transformation, glm::vec3(width, height, 1.0f));
+
+    this->rectShape.draw(&this->textureShader, transformation, this->projection, tint.glm(), &texture);
+}
+
 
 glm::vec2 Engine2D::mousePos() const {
     double x, y;

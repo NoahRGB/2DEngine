@@ -3,8 +3,11 @@ a basic renderer in OpenGL capable of drawings quads, circles, etc. with shaders
 
 examples
 
-![mandelbrot1 gif](./mandelbrot2.gif)
+![gameoflife gif](./examples/gameoflife.gif)
 
 
-![mandelbrot2 gif](./mandelbrot.gif)
+![mandelbrot1 gif](./examples/mandelbrot2.gif)
+
+
+![mandelbrot2 gif](./examples/mandelbrot.gif)
 

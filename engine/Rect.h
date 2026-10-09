@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Shader.h"
+#include "Texture.h"
 
 class Rect {
 
@@ -8,7 +9,7 @@ class Rect {
         Rect();
 
         void setupGeometry();
-        void draw(Shader* shader, glm::mat4 trans, glm::mat4 proj, glm::vec4 colour);
+        void draw(Shader* shader, glm::mat4 trans, glm::mat4 proj, glm::vec4 colour, Texture* texture = nullptr);
 
         unsigned int vao, vbo, ebo;
 

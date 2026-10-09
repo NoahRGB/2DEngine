@@ -25,6 +25,7 @@ public:
 
 	void drawRect(float x, float y, float width, float height, const Colour& colour, Shader* shader = nullptr);
     void drawCircle(float x, float y, float radius, const Colour& colour, Shader* shader = nullptr);
+    void drawTexture(float x, float y, float width, float height, Texture& texture, const Colour& tint);
 
     glm::vec2 mousePos() const;
     float scroll() const;
@@ -32,8 +33,7 @@ public:
     double time() const;
 
     Rect rectShape;
-    Shader commonShader;
-    Shader circleShader;
+    Shader commonShader, circleShader, textureShader;
 
     glm::mat4 projection;
     void updateProjection();

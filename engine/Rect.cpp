@@ -33,11 +33,18 @@ void Rect::setupGeometry() {
     glEnableVertexAttribArray(0);
 }
 
-void Rect::draw(Shader* shader, glm::mat4 trans, glm::mat4 proj, glm::vec4 colour) {
+void Rect::draw(Shader* shader, glm::mat4 trans, glm::mat4 proj, glm::vec4 colour, Texture* texture) {
     shader->enable();
     shader->setMat4f("uModel", trans);
     shader->setMat4f("uProjection", proj);
     shader->setVec4f("uColour", colour);
+
+    if (texture) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture->textureId);
+        shader->setInt("uTexture", 0);
+    }
+
     glBindVertexArray(this->vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
