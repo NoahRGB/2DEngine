@@ -6,78 +6,93 @@
 #include <iostream>
 #include <vector>
 
-std::vector<std::pair<int, int>> get_neighbours(int row, int col, int numRows, int numCols) {
-	std::vector<std::pair<int, int>> neighbours;
-	neighbours.push_back(std::pair<int, int>((row+1)%numRows, col));
-	neighbours.push_back(std::pair<int, int>((row-1+numRows)%numRows, col));
-	neighbours.push_back(std::pair<int, int>(row, (col+1)%numCols));
-	neighbours.push_back(std::pair<int, int>(row, (col-1+numCols)%numCols));
-	neighbours.push_back(std::pair<int, int>((row+1)%numRows, (col+1)%numCols));
-	neighbours.push_back(std::pair<int, int>((row-1+numRows)%numRows, (col-1+numCols)%numCols));
-	neighbours.push_back(std::pair<int, int>((row+1)%numRows, (col-1+numCols)%numCols));
-	neighbours.push_back(std::pair<int, int>((row-1+numRows)%numRows, (col+1)%numCols));
-	return neighbours;
-}
-
 int main() {
 
-	int WIDTH = 800, HEIGHT = 800;
+	int WIDTH = 1000, HEIGHT = 1000;
 	Colour bg(0, 0, 0, 1);
 
 	Engine2D engine(WIDTH, HEIGHT);
 	engine.init();
 
-	int cellSize = 3;
+	int cellSize = 5;
 	int numCols = WIDTH/cellSize, numRows = HEIGHT/cellSize;
 
-	Texture grid = Texture(numCols, numRows);
+	Texture grid = Texture(numCols, numRows, 4);
 
-	// std::vector<std::vector<bool>> currentGeneration(numRows, std::vector<bool>(numCols, false));
+	// 1D array so it can be fed into a texturee
 	std::vector<unsigned char> currentGeneration(numRows * numCols);
-	
+	std::vector<unsigned char> nextGeneration(numRows * numCols);
+	std::vector<unsigned char> pixels(numRows * numCols * 4); // stores rgba
+
+	std::vector<int> aliveCounter(numRows * numCols);
+	for (int row = 0; row < numRows; row++) {
+		for (int col = 0; col < numCols; col++) {
+			aliveCounter[col + row * numCols] = 0;
+		}
+	}
+
 	std::mt19937 rng(std::random_device{}());
 	std::bernoulli_distribution alive(0.25);
 
-	for (int row = 0; row < numRows; row++)
-		for (int col = 0; col < numCols; col++)
+	int steps = 0;
+
+	// initialise first generation randomly
+	for (int row = 0; row < numRows; row++) {
+		for (int col = 0; col < numCols; col++) {
 			currentGeneration[col + row * numCols] = alive(rng) ? 255 : 0;
+		}
+	}
 
 	engine.update = [&](float deltaTime) {
-	
+		steps += 1;
+		if (steps % 5 == 0) {
+			for (int row = 0; row < numRows; row++) {
+				for (int col = 0; col < numCols; col++) {
+
+					bool currentCellAlive = currentGeneration[col + row * numCols];
+
+					int aliveNeighbours = 0;
+					// check all 8 neighoburs (with wrap around)
+					aliveNeighbours += currentGeneration[col + ((row+1)%numRows) * numCols] ? 1 : 0;
+					aliveNeighbours += currentGeneration[col + ((row-1+numRows)%numRows) * numCols] ? 1 : 0;
+					aliveNeighbours += currentGeneration[((col+1)%numCols) + row * numCols] ? 1 : 0;
+					aliveNeighbours += currentGeneration[((col-1+numCols)%numCols) + row * numCols] ? 1 : 0;
+					aliveNeighbours += currentGeneration[((col+1)%numCols) + ((row+1)%numRows) * numCols] ? 1 : 0;
+					aliveNeighbours += currentGeneration[((col-1+numCols)%numCols) + ((row-1+numRows)%numRows) * numCols] ? 1 : 0;
+					aliveNeighbours += currentGeneration[((col-1+numCols)%numCols) + ((row+1)%numRows) * numCols] ? 1 : 0;
+					aliveNeighbours += currentGeneration[((col+1)%numCols) +  ((row-1+numRows)%numRows) * numCols] ? 1 : 0;
+
+					// update using game of life rules, increment alive counter
+					nextGeneration[col + row * numCols] = (aliveNeighbours == 3 || (currentCellAlive && aliveNeighbours == 2)) ? 255 : 0;
+					aliveCounter[col + row * numCols] = nextGeneration[col + row * numCols] ? aliveCounter[col + row * numCols] + 1 : 0;
+				}
+			}
+			
+			std::swap(currentGeneration, nextGeneration);
+		}
 	};
 
 	engine.render = [&]() {
 		engine.clearScreen();
 
-		std::vector<unsigned char> nextGeneration = currentGeneration;
+		// copy over generation states into pixels buffer
+		for (int i = 0; i < numRows * numCols; i++) {
+			bool isCellAlive = currentGeneration[i];
+			int aliveLength = aliveCounter[i];
 
-		for (int row = 0; row < numRows; row++) {
-			for (int col = 0; col < numCols; col++) {
+			// animate colour using HSV
+			float t = 1.0f - std::exp(-aliveLength / 15.0f);
+			float v = 1.0f - t * 0.8f;
+			Colour cellColour = Colour(v*360.0f, v, v);
 
-				bool currentCellAlive = currentGeneration[col + row * numCols];
-
-				// Colour cellCol = currentCellAlive ? Colour(255, 255, 255, 1) : Colour(0, 0, 0, 1);
-				// if (currentCellAlive)
-				// 	engine.drawRect(col * cellSize, row * cellSize, cellSize, cellSize, cellCol);
-
-				std::vector<std::pair<int, int>> neighbours = get_neighbours(row, col, numRows, numCols);
-				int aliveNeighbours = 0;
-				for (std::pair<int, int> neighbour : neighbours) {
-					aliveNeighbours += currentGeneration[neighbour.second + neighbour.first * numCols] ? 1 : 0;
-				}
-
-				if (currentCellAlive && aliveNeighbours < 2 || currentCellAlive && aliveNeighbours > 3) {
-					nextGeneration[col + row * numCols] = 0;
-				}
-				if (!currentCellAlive && aliveNeighbours == 3) {
-					nextGeneration[col + row * numCols] = 255;
-				}
-
-			}
+			// RGBA
+			pixels[i*4 + 0] = isCellAlive ? cellColour.r*255 : 0;
+			pixels[i*4 + 1] = isCellAlive ? cellColour.g*255 : 0;
+			pixels[i*4 + 2] = isCellAlive ? cellColour.b*255 : 0;
+			pixels[i*4 + 3] = 255;
 		}
 
-		currentGeneration = nextGeneration;
-		grid.setTexture(currentGeneration.data());
+		grid.setTexture(pixels.data());
 		engine.drawTexture(0, 0, WIDTH, HEIGHT, grid, {255, 255, 255, 1});
 
 

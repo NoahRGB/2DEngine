@@ -7,11 +7,11 @@ class Texture {
 
 public:
     Texture(const char* path);
-    Texture(int width, int height);
+    Texture(int width, int height, int channels);
 
     void setTexture(const unsigned char* pixels);
 
-    int width, height;
+    int width, height, channels;
     unsigned int textureId;
 
 private:

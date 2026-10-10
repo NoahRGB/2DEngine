@@ -54,7 +54,8 @@ int Engine2D::init() {
         this->close();
         return -1;
     }
-
+    
+    glfwSwapInterval(1);
     glViewport(0, 0, this->windowWidth, this->windowHeight);
     glfwSetWindowUserPointer(this->window, this);
     glfwSetFramebufferSizeCallback(this->window, Engine2D::framebuffer_size_callback);
