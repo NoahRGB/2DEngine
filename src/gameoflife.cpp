@@ -33,7 +33,7 @@ int main() {
 	}
 
 	std::mt19937 rng(std::random_device{}());
-	std::bernoulli_distribution alive(0.5);
+	std::bernoulli_distribution alive(0.25);
 
 	int steps = 0;
 

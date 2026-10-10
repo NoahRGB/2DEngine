@@ -87,6 +87,12 @@ void Engine2D::drawRect(float x, float y, float width, float height, const Colou
     this->rectShape.draw(s, transformation, this->projection, colour.glm());
 }
 
+void Engine2D::drawLine(float x1, float y1, float x2, float y2, const Colour& colour, Shader* shader) {
+    Shader* s = shader ? shader : &this->commonShader;
+
+
+}
+
 void Engine2D::drawCircle(float x, float y, float radius, const Colour& colour, Shader* shader) {
     Shader* s = shader ? shader : &this->circleShader;
 

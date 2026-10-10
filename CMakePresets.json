@@ -1,10 +1,16 @@
-﻿{
+{
   "version": 5,
   "configurePresets": [
     {
       "name": "default",
+      "displayName": "Windows (MSYS2 MinGW)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_TOOLCHAIN_FILE": "C:/Users/noahc/vcpkg/scripts/buildsystems/vcpkg.cmake",
@@ -13,12 +19,43 @@
         "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
         "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe"
       }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux (GCC)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "build",
-      "configurePreset": "default"
+      "configurePreset": "default",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "build-linux",
+      "configurePreset": "linux",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
     }
   ]
 }

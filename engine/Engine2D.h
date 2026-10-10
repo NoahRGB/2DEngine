@@ -24,6 +24,7 @@ public:
 	void background(const Colour& colour);
 
 	void drawRect(float x, float y, float width, float height, const Colour& colour, Shader* shader = nullptr);
+    void drawLine(float x1, float y1, float x2, float y2, const Colour& colour, Shader* shader = nullptr);
     void drawCircle(float x, float y, float radius, const Colour& colour, Shader* shader = nullptr);
     void drawTexture(float x, float y, float width, float height, Texture& texture, const Colour& tint);
 
