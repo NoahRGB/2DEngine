@@ -8,7 +8,7 @@
 
 int main() {
 
-	int WIDTH = 1000, HEIGHT = 1000;
+	int WIDTH = 500, HEIGHT = 500;
 	Colour bg(0, 0, 0, 1);
 
 	Engine2D engine(WIDTH, HEIGHT);
@@ -16,6 +16,7 @@ int main() {
 
 	int cellSize = 5;
 	int numCols = WIDTH/cellSize, numRows = HEIGHT/cellSize;
+	bool savedIsClicking = false;
 
 	Texture grid = Texture(numCols, numRows, 4);
 
@@ -32,7 +33,7 @@ int main() {
 	}
 
 	std::mt19937 rng(std::random_device{}());
-	std::bernoulli_distribution alive(0.25);
+	std::bernoulli_distribution alive(0.5);
 
 	int steps = 0;
 
@@ -70,6 +71,23 @@ int main() {
 			
 			std::swap(currentGeneration, nextGeneration);
 		}
+
+		bool isClicking = engine.isLeftClicking();
+		if (isClicking && savedIsClicking) {
+			// must be dragging
+			glm::dvec2 mousePos = engine.mousePos();
+			int col = mousePos.x / cellSize, row = mousePos.y / cellSize;
+			currentGeneration[col + row * numCols] = 255;
+			currentGeneration[col + ((row+1)%numRows) * numCols] = 255;
+			currentGeneration[col + ((row-1+numRows)%numRows) * numCols] = 255;
+			currentGeneration[((col+1)%numCols) + row * numCols] = 255;
+			currentGeneration[((col-1+numCols)%numCols) + row * numCols] = 255;
+			currentGeneration[((col+1)%numCols) + ((row+1)%numRows) * numCols] = 255;
+			currentGeneration[((col-1+numCols)%numCols) + ((row-1+numRows)%numRows) * numCols] = 255;
+			currentGeneration[((col-1+numCols)%numCols) + ((row+1)%numRows) * numCols] = 255;
+			currentGeneration[((col+1)%numCols) +  ((row-1+numRows)%numRows) * numCols] = 255;
+		}
+		savedIsClicking = isClicking;
 	};
 
 	engine.render = [&]() {
